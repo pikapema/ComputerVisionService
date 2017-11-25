@@ -10,24 +10,16 @@ using System.Web.Http;
 using Microsoft.Cognitive.CustomVision;
 using Microsoft.Cognitive.CustomVision.Models;
 using System.IO;
+using System.Text;
 using System.Threading;
+using Microsoft.Rest;
+using Microsoft.Rest.Serialization;
 
 namespace ImageService.Controllers
 {
     public class RecognizeController : ApiController
     {
-        // GET api/values
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
-        // GET api/values/5
-        public string Get(int id)
-        {
-            return "value";
-        }
-
+        
         // POST api/values
         public async Task<HttpResponseMessage> Post()
         {
@@ -65,23 +57,13 @@ namespace ImageService.Controllers
                 {
                     Debug.WriteLine($"\t{c.Tag}: {c.Probability:P1}");
                 }
-                return Request.CreateResponse(HttpStatusCode.OK);
+                return Request.CreateResponse<ImagePredictionResultModel>(HttpStatusCode.OK, result);
             }
             catch (System.Exception e)
             {
                 Debug.WriteLine("Error when in predicition! Exception: " + e.Message);
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, e);
             }
-        }
-
-        // PUT api/values/5
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/values/5
-        public void Delete(int id)
-        {
         }
     }
 }
