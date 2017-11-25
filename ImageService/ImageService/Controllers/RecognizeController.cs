@@ -32,36 +32,37 @@ namespace ImageService.Controllers
             try
             {
                 // Get the prediction key, which is used in place of the training key when making predictions
-                Guid projectid = new Guid("57471653-6e79-455f-b874-ee00d1014c37");
-
-                Debug.WriteLine("\tTraining");
-
-                // Create a prediction endpoint, passing in a prediction credentials object that contains the obtained prediction key
-                PredictionEndpointCredentials predictionEndpointCredentials = new PredictionEndpointCredentials("ccfb0bac69b74465a635276c634dc4bb");
-                PredictionEndpoint endpoint = new PredictionEndpoint(predictionEndpointCredentials);
-
-
                 string root = HttpContext.Current.Server.MapPath("~/App_Data");
                 var provider = new MultipartFormDataStreamProvider(root);
                 // Read the form data.
                 await Request.Content.ReadAsMultipartAsync(provider);
+                string key = provider.FormData.Get("key");
+                Guid projectid = new Guid("57471653-6e79-455f-b874-ee00d1014c37");
 
+                // Create a prediction endpoint, passing in a prediction credentials object that contains the obtained prediction key
+                
+                PredictionEndpointCredentials predictionEndpointCredentials = new PredictionEndpointCredentials(key);
+                PredictionEndpoint endpoint = new PredictionEndpoint(predictionEndpointCredentials);
+                                
                 MemoryStream memStream = new MemoryStream(File.ReadAllBytes(provider.FileData[0].LocalFileName));
 
                 // Make a prediction against the new project
                 Debug.WriteLine("Making a prediction:");
                 var result = endpoint.PredictImage(projectid, memStream);
-
+                               
                 // Loop over each prediction and write out the results
-                foreach (var c in result.Predictions)
+                var predicition = result.Predictions.FirstOrDefault(P => P.Probability >= 0.8);
+                if( predicition == null )
+                    return Request.CreateResponse(HttpStatusCode.OK, "Could not find a good match for the uploaded image. Please try again.");
+                else
                 {
-                    Debug.WriteLine($"\t{c.Tag}: {c.Probability:P1}");
+                    return Request.CreateResponse(HttpStatusCode.OK, "Your image is of type " + predicition.Tag + " with the probability of " + predicition.Probability);
                 }
-                return Request.CreateResponse<ImagePredictionResultModel>(HttpStatusCode.OK, result);
+                //return Request.CreateResponse<ImagePredictionResultModel>(HttpStatusCode.OK, result);
             }
             catch (System.Exception e)
             {
-                Debug.WriteLine("Error when in predicition! Exception: " + e.Message);
+                Debug.WriteLine("Error in predicition! Exception: " + e.Message);
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, e);
             }
         }

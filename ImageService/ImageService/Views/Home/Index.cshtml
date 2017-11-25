@@ -6,13 +6,18 @@
 <div class="row">
     <div class="col-md-4">
         <h2>Upload image</h2>        
-		<form name="form1" method="post" enctype="multipart/form-data" action="api/recognize">    
+	<form id="myForm" name="form1" method="post" enctype="multipart/form-data" action="api/recognize"> 
+<div>
+        <label for="key">Prediction key</label>
+        <input name="key" type="text" />
+    </div>	
     <div>
         <label for="image1">Image File</label>
         <input name="image1" type="file" />
     </div>
+	
     <div>
-        <input type="submit" value="Submit" />
+        <input type="submit" id="submitButton"  name="submitButton" value="Submit">
     </div>
 </form>
     </div>
