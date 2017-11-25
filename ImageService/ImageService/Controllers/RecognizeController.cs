@@ -14,7 +14,7 @@ using System.Threading;
 
 namespace ImageService.Controllers
 {
-    public class ValuesController : ApiController
+    public class RecognizeController : ApiController
     {
         // GET api/values
         public IEnumerable<string> Get()
@@ -29,7 +29,7 @@ namespace ImageService.Controllers
         }
 
         // POST api/values
-        public async Task<HttpResponseMessage> Post([FromBody]string value)
+        public async Task<HttpResponseMessage> Post()
         {
             // Check if the request contains multipart/form-data.
             if (!Request.Content.IsMimeMultipartContent())
@@ -42,7 +42,7 @@ namespace ImageService.Controllers
                 // Get the prediction key, which is used in place of the training key when making predictions
                 Guid projectid = new Guid("57471653-6e79-455f-b874-ee00d1014c37");
 
-                Console.WriteLine("\tTraining");
+                Debug.WriteLine("\tTraining");
 
                 // Create a prediction endpoint, passing in a prediction credentials object that contains the obtained prediction key
                 PredictionEndpointCredentials predictionEndpointCredentials = new PredictionEndpointCredentials("ccfb0bac69b74465a635276c634dc4bb");
@@ -57,19 +57,19 @@ namespace ImageService.Controllers
                 MemoryStream memStream = new MemoryStream(File.ReadAllBytes(provider.FileData[0].LocalFileName));
 
                 // Make a prediction against the new project
-                Console.WriteLine("Making a prediction:");
+                Debug.WriteLine("Making a prediction:");
                 var result = endpoint.PredictImage(projectid, memStream);
 
                 // Loop over each prediction and write out the results
                 foreach (var c in result.Predictions)
                 {
-                    Console.WriteLine($"\t{c.Tag}: {c.Probability:P1}");
+                    Debug.WriteLine($"\t{c.Tag}: {c.Probability:P1}");
                 }
                 return Request.CreateResponse(HttpStatusCode.OK);
             }
             catch (System.Exception e)
             {
-                Console.WriteLine("Error when in predicition! Exception: " + e.Message);
+                Debug.WriteLine("Error when in predicition! Exception: " + e.Message);
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, e);
             }
         }
